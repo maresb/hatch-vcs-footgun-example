@@ -93,7 +93,7 @@ After cloning this repository,
 ```bash
 python -m hatch_vcs_footgun_example.main  # Prints an error because it's not installed
 pip install --editable .  # Installs and creates the "_version.py" file
-python -m hatch_vcs_footgun_example.main  # Prints "My version is '1.0.0'."
+python -m hatch_vcs_footgun_example.main  # Prints "My version is '1.0.1'."
 ```
 
 Without `setuptools-scm` installed, the version number is reported incorrectly after a new tag.
@@ -101,7 +101,7 @@ Without `setuptools-scm` installed, the version number is reported incorrectly a
 ```bash
 git commit --allow-empty -m "For v1.2.3"
 git tag v1.2.3
-python -m hatch_vcs_footgun_example.main  # My version is '1.0.0'.
+python -m hatch_vcs_footgun_example.main  # My version is '1.0.1'.
 ```
 
 With `setuptools-scm` installed the version is correctly reported:
