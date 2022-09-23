@@ -6,6 +6,9 @@ build-backend = "hatchling.build"
 name = "hatch-vcs-footgun-example"
 dynamic = ["version"]
 
+[project.urls]
+Homepage = "https://github.com/maresb/hatch-vcs-footgun-example"
+
 [tool.hatch.version]
 source = "vcs"
 
