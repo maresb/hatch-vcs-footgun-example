@@ -16,13 +16,14 @@ A somewhat hacky usage of the [Hatch VCS build hook](https://github.com/ofek/hat
 
 ## Background
 
-For consistency's sake, it's good to have a single source of truth for the version number of your project. There are three common places where the version number appears in most modern Python projects:
+For consistency's sake, it's good to have a single source of truth for the version number of your project. However, there are four common places where the version number appears in most modern Python projects:
 
 1. The `version` field of the `[project]` section of `pyproject.toml`.
+1. The dist-info `METADATA` file from when the project was installed.
 1. The `__version__` variable in the `__init__.py` file of the project's main package.
 1. The Git tag of the release commit.
 
-With Hatch VCS, the single source of truth is the Git tag. One often still needs a technique to access this version number programmatically. The [quasi-standard](https://stackoverflow.com/a/459185) is to store it in the `__version__` variable, so that the following works:
+With Hatch VCS, the definitive source of truth is the Git tag. One often still needs a technique to access this version number programmatically. The [quasi-standard](https://stackoverflow.com/a/459185) is to store it in the `__version__` variable, so that the following works:
 
 ```python
 import myproject
@@ -45,7 +46,11 @@ print(myproject.__version__)
 
    This works well in most cases, and does *not* require the Hatch VCS build hook.
 
-   A downside is that this is relatively slow. If performance is crucial and every millisecond counts (e.g. if one is writing a CLI tool), then this is not an ideal solution.
+   There are two important caveats to this approach.
+
+   1.  The version number comes from the last time the project was installed. In case you are developing your project in editable mode, the reported version may be outdated unless you remember to reinstall each time the version number changes.
+
+   2. Parsing the `METADATA` file can be relatively slow. If performance is crucial and every millisecond counts (e.g. if one is writing a CLI tool), then this is not an ideal solution.
 
    (For compatibility with Python 3.7 and lower, see [the examples here](https://packaging.python.org/en/latest/guides/single-sourcing-package-version/) regarding `importlib_metadata`.)
 
@@ -60,7 +65,7 @@ print(myproject.__version__)
 
    Since `_version.py` is generated dynamically, it should be added to `.gitignore`.
 
-   One disadvantage in certain situations (e.g. collaborative team development) is that if the project is installed in editable mode, then the `_version.py` file will not be updated unless the package is reinstalled or locally rebuilt.
+   As with the `importlib.metadata` approach, if the project is installed in editable mode then the `_version.py` file will not be updated unless the package is reinstalled (or locally rebuilt).
 
 1. ### Compute the version number at runtime with `setuptools_scm`
 
@@ -76,9 +81,11 @@ print(myproject.__version__)
 
    This is very fragile, but has the advantage that when it works, the version number is always up-to-date, even for an editable installation.
 
+Note that parsing the version from `pyproject.toml` is usually _not_ a viable option because this file is typically absent when a project is installed from a wheel!
+
 ## Conclusion
 
-In most cases, using `importlib.metadata` or `_version.py` are the best solutions. In the second case, the Hatch VCS build hook is a good way to generate the `_version.py` file.
+In most cases, using `importlib.metadata.version` or a `_version.py` are the best solutions. In the second case, the Hatch VCS build hook is a good way to generate the `_version.py` file. However, this data can become outdated during development with an editable install. If reporting the correct version during development is important, then the hybrid approach as follows may be desirable.
 
 ## Why "Footgun"?
 
