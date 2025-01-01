@@ -11,6 +11,3 @@ Homepage = "https://github.com/maresb/hatch-vcs-footgun-example"
 
 [tool.hatch.version]
 source = "vcs"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "hatch_vcs_footgun_example/_version.py"
