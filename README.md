@@ -141,6 +141,11 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
    Ensure that the project is properly installed, e.g. by running `pip install -editable .`.
 
+* ### `ModuleNotFoundError: No module named 'importlib.metadata'`
+
+   For end-of-life versions of Python below 3.8, the `importlib.metadata` module is not available. In this case, you need to install the `importlib-metadata` backport and
+   fall back to `importlib_metadata` in place of `importlib.metadata`.
+
 ## Conclusion
 
 In most cases, using `importlib.metadata.version` is the best solution. However, this data can become outdated during development with an editable install. If reporting the correct version during development is important, then the hybrid approach implemented in [`version.py`](hatch_vcs_footgun_example/version.py) may be desirable:
