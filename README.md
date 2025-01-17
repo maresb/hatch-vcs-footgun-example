@@ -75,12 +75,6 @@ There are many potential pitfalls to this approach. Please open an issue if you 
    git pull --tags
    ```
 
-* ### `Unknown version source: vcs`
-
-   Install `hatch-vcs` in your development environment.
-
-   If you see this in your production environment, then uninstall `hatchling`.
-
 * ### `ValueError: A distribution name is required.`
 
    This occurs when the `__package__` variable is not set. Always ensure that you invoke your package as a module.
@@ -99,9 +93,6 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
    (The latter should only be used for running scripts that are not part of a package!)
 
-* ### `LookupError: Error getting the version from source `vcs`: setuptools-scm was unable to detect version`
-
-   This can occur if `git` is not correctly installed.
 
 * ### `ImportError: cannot import name '__version__' from partially initialized module '...' (most likely due to a circular import)`
 
@@ -139,7 +130,7 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
 * ### `ImportError: attempted relative import with no known parent package`
 
-   Ensure that the project is properly installed, e.g. by running `pip install -editable .`.
+   Ensure that the project is properly installed, e.g. by running `pip install --editable .`.
 
 * ### `ModuleNotFoundError: No module named 'importlib.metadata'`
 

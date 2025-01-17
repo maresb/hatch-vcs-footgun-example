@@ -12,6 +12,7 @@ def _get_hatch_version():
 
     try:
         from hatchling.metadata.core import ProjectMetadata
+        from hatchling.plugin.exceptions import UnknownPluginError
         from hatchling.plugin.manager import PluginManager
         from hatchling.utils.fs import locate_file
     except ImportError:
@@ -24,8 +25,13 @@ def _get_hatch_version():
         raise RuntimeError("pyproject.toml not found although hatchling is installed")
     root = os.path.dirname(pyproject_toml)
     metadata = ProjectMetadata(root=root, plugin_manager=PluginManager())
-    # Version can be either statically set in pyproject.toml or computed dynamically:
-    return metadata.core.version or metadata.hatch.version.cached
+    try:
+        # Version can be either statically set in pyproject.toml or computed dynamically:
+        return metadata.core.version or metadata.hatch.version.cached
+    except (LookupError, UnknownPluginError):
+        # LookupError: Git is probably not correctly installed
+        # UnknownPluginError: Hatchling is installed but `hatch-vcs` isn’t
+        return None
 
 
 def _get_importlib_metadata_version():
