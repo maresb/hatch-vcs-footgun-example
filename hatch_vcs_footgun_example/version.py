@@ -1,4 +1,7 @@
-"""Compute the version number and store it in the `__version__` variable."""
+"""Compute the version number and store it in the `__version__` variable.
+
+Based on <https://github.com/maresb/hatch-vcs-footgun-example>.
+"""
 
 
 def _get_hatch_version():
