@@ -10,8 +10,7 @@ A somewhat hacky usage of the [Hatch VCS](https://github.com/ofek/hatch-vcs) plu
 
 1. Ensure that [Hatch VCS](https://pypi.org/project/hatch-vcs/) is configured in [`pyproject.toml`](pyproject.toml).
 1. Copy the contents of [`version.py`](hatch_vcs_footgun_example/version.py) and adjust to your project.
-1. Install `hatch-vcs` as a development-only dependency.
-1. Enjoy up-to-date version numbers, even in editable mode.
+1. Set the `HATCH_VCS_RUNTIME_VERSION` environment variable to anything (e.g. `1`) to enable updating the version number at runtime.
 
 ## Background
 
@@ -62,6 +61,8 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
    This is very fragile, but has the advantage that when it works, the version number is always up-to-date, even for an editable installation.
 
    This method should always be used with a fallback to one of the other two methods to avoid failure when the requirements are not met. For example, a production deployment will typically not have `git`, `hatchling`, or `hatch-vcs` installed.
+
+We recommend a default of using `importlib.metadata` to compute the version number. When more up-to-date version numbers are needed, the `hatch-vcs` method can be used by setting `HATCH_VCS_RUNTIME_VERSION`.
 
 ## Troubleshooting
 
@@ -152,8 +153,8 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
 In most cases, using `importlib.metadata.version` is the best solution. However, this data can become outdated during development with an editable install. If reporting the correct version during development is important, then the hybrid approach implemented in [`version.py`](hatch_vcs_footgun_example/version.py) may be desirable:
 
-- Default to using `hatch-vcs` to compute the version number at runtime.
-- Fall back to using `importlib.metadata.version` if `hatchling` is not installed.
+- Default to using `importlib.metadata.version` to compute the version number.
+- Use `hatch-vcs` to update the version number at runtime if `HATCH_VCS_RUNTIME_VERSION` is set.
 
 ## Why "Footgun"?
 
