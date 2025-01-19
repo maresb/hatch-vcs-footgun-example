@@ -64,6 +64,42 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
 
 We recommend a default of using `importlib.metadata` to compute the version number. When more up-to-date version numbers are needed, the `hatch-vcs` method can be used by setting `HATCH_VCS_RUNTIME_VERSION`.
 
+## Conclusion
+
+In most cases, using `importlib.metadata.version` is the best solution. However, this data can become outdated during development with an editable install. If reporting the correct version during development is important, then the hybrid approach implemented in [`version.py`](hatch_vcs_footgun_example/version.py) may be desirable:
+
+- Default to using `importlib.metadata.version` to compute the version number.
+- Use `hatch-vcs` to update the version number at runtime if `HATCH_VCS_RUNTIME_VERSION` is set.
+
+## Why "Footgun"?
+
+This hybrid approach is somewhat of a [footgun](https://en.wiktionary.org/wiki/footgun): it involves distinct version detection mechanisms between development and deployment. Ideally you should always remember to reinstall the package whenever checking out a new commit so that you can simply use the standard `importlib.metadata.version` mechanism. In constrast, the hybrid approach is unsupported, so it must be used at your own risk.
+
+## Usage
+
+After cloning this repository,
+
+```bash
+python -m hatch_vcs_footgun_example.main  # PackageNotFoundError because it's not installed
+pip install --editable .
+python -m hatch_vcs_footgun_example.main  # Prints "My version is '1.0.3'."
+```
+
+Without `hatch-vcs` installed, the version number is reported incorrectly after a new tag.
+
+```bash
+git commit --allow-empty -m "For v1.2.3"
+git tag v1.2.3
+python -m hatch_vcs_footgun_example.main  # My version is '1.0.3'.
+```
+
+With `hatch-vcs` installed the version is correctly reported:
+
+```bash
+pip install hatch-vcs
+python -m hatch_vcs_footgun_example.main  # My version is '1.2.3'.
+```
+
 ## Troubleshooting
 
 There are many potential pitfalls to this approach. Please open an issue if you encounter one not covered here, or if the solution is insufficient.
@@ -148,39 +184,3 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
   For end-of-life versions of Python below 3.8, the `importlib.metadata` module is not available. In this case, you need to install the `importlib-metadata` backport and
   fall back to `importlib_metadata` in place of `importlib.metadata`.
-
-## Conclusion
-
-In most cases, using `importlib.metadata.version` is the best solution. However, this data can become outdated during development with an editable install. If reporting the correct version during development is important, then the hybrid approach implemented in [`version.py`](hatch_vcs_footgun_example/version.py) may be desirable:
-
-- Default to using `importlib.metadata.version` to compute the version number.
-- Use `hatch-vcs` to update the version number at runtime if `HATCH_VCS_RUNTIME_VERSION` is set.
-
-## Why "Footgun"?
-
-This hybrid approach is somewhat of a [footgun](https://en.wiktionary.org/wiki/footgun): it involves distinct version detection mechanisms between development and deployment. Ideally you should always remember to reinstall the package whenever checking out a new commit so that you can simply use the standard `importlib.metadata.version` mechanism. In constrast, the hybrid approach is unsupported, so it must be used at your own risk.
-
-## Usage
-
-After cloning this repository,
-
-```bash
-python -m hatch_vcs_footgun_example.main  # PackageNotFoundError because it's not installed
-pip install --editable .
-python -m hatch_vcs_footgun_example.main  # Prints "My version is '1.0.3'."
-```
-
-Without `hatch-vcs` installed, the version number is reported incorrectly after a new tag.
-
-```bash
-git commit --allow-empty -m "For v1.2.3"
-git tag v1.2.3
-python -m hatch_vcs_footgun_example.main  # My version is '1.0.3'.
-```
-
-With `hatch-vcs` installed the version is correctly reported:
-
-```bash
-pip install hatch-vcs
-python -m hatch_vcs_footgun_example.main  # My version is '1.2.3'.
-```
