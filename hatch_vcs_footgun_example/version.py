@@ -41,5 +41,5 @@ def _get_importlib_metadata_version():
 
 
 __version__ = _get_importlib_metadata_version()
-if os.environ.get("HATCH_VCS_RUNTIME_VERSION"):
+if os.environ.get("MYPROJECT_HATCH_VCS_RUNTIME_VERSION"):
     __version__ = _get_hatch_version()
