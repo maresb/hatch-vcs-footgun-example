@@ -10,7 +10,7 @@ A somewhat hacky usage of the [Hatch VCS](https://github.com/ofek/hatch-vcs) plu
 
 1. Ensure that [Hatch VCS](https://pypi.org/project/hatch-vcs/) is configured in [`pyproject.toml`](pyproject.toml).
 1. Copy the contents of [`version.py`](hatch_vcs_footgun_example/version.py) and adjust to your project.
-1. Set the `HATCH_VCS_RUNTIME_VERSION` environment variable to anything (e.g. `1`) to enable updating the version number at runtime.
+1. Set the `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` environment variable to anything (e.g. `1`) to enable updating the version number at runtime.
 
 ## Background
 
@@ -62,18 +62,20 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
 
    This method should always be used with a fallback to one of the other two methods to avoid failure when the requirements are not met. For example, a production deployment will typically not have `git`, `hatchling`, or `hatch-vcs` installed.
 
-We recommend a default of using `importlib.metadata` to compute the version number. When more up-to-date version numbers are needed, the `hatch-vcs` method can be used by setting `HATCH_VCS_RUNTIME_VERSION`.
+We recommend a default of using `importlib.metadata` to compute the version number. When more up-to-date version numbers are needed, the `hatch-vcs` method can be used by setting `MYPROJECT_HATCH_VCS_RUNTIME_VERSION`.
 
 ## Conclusion
 
 In most cases, using `importlib.metadata.version` is the best solution. However, this data can become outdated during development with an editable install. If reporting the correct version during development is important, then the hybrid approach implemented in [`version.py`](hatch_vcs_footgun_example/version.py) may be desirable:
 
 - Default to using `importlib.metadata.version` to compute the version number.
-- Use `hatch-vcs` to update the version number at runtime if `HATCH_VCS_RUNTIME_VERSION` is set.
+- Use `hatch-vcs` to update the version number at runtime if `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` is set.
 
 ## Why "Footgun"?
 
-This hybrid approach is somewhat of a [footgun](https://en.wiktionary.org/wiki/footgun): it involves distinct version detection mechanisms between development and deployment. Ideally you should always remember to reinstall the package whenever checking out a new commit so that you can simply use the standard `importlib.metadata.version` mechanism. In constrast, the hybrid approach is unsupported, so it must be used at your own risk.
+Such a hybrid approach to determine the version number is somewhat of a [footgun](https://en.wiktionary.org/wiki/footgun): it involves distinct version detection mechanisms between development and deployment. Ideally you should always remember to reinstall the package whenever checking out a new commit so that you can simply use the standard `importlib.metadata.version` mechanism. In contrast, the hybrid approach is unsupported, so it must be used at your own risk.
+
+Earlier versions of this project were significantly more fragile because they tried to guess whether or not the project was being run in a development environment. Thanks to community feedback, the current version is much less of a footgun.
 
 ## Usage
 
