@@ -36,6 +36,12 @@ def _get_importlib_metadata_version():
     """
     from importlib.metadata import version
 
+    if __package__ is None:
+        raise RuntimeError(
+            f"__package__ not set in '{__file__}' - ensure that you are running this "
+            "module as part of a package, e.g. 'python -m mypackage.version' instead "
+            "of 'python mypackage/version.py'."
+        )
     __version__ = version(__package__)
     return __version__
 
