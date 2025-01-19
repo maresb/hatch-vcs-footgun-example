@@ -41,7 +41,7 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
 
    1. The version number comes from the last time the project was installed. In case you are developing your project in editable mode, the reported version may be outdated unless you remember to reinstall each time the version number changes.
 
-   2. Parsing the `METADATA` file can be relatively slow. If performance is crucial and every millisecond of startup time counts (e.g. if one is writing a CLI tool), then this is not an ideal solution.
+   1. Parsing the `METADATA` file can be relatively slow. If performance is crucial and every millisecond of startup time counts (e.g. if one is writing a CLI tool), then this is not an ideal solution.
 
 1. ### Use a static `_version.py` file
 
@@ -56,8 +56,8 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
    This strategy has several requirements:
 
    1. The `pyproject.toml` file must be present. (This is usually _not_ a viable option because this file is typically absent when a project is installed from a wheel!)
-   2. The `hatch-vcs` plugin must be installed. (This is usually only true in the build environment.)
-   3. `git` must be available, and the tags must be accessible and up-to-date.
+   1. The `hatch-vcs` plugin must be installed. (This is usually only true in the build environment.)
+   1. `git` must be available, and the tags must be accessible and up-to-date.
 
    This is very fragile, but has the advantage that when it works, the version number is always up-to-date, even for an editable installation.
 
@@ -67,84 +67,86 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
 
 There are many potential pitfalls to this approach. Please open an issue if you encounter one not covered here, or if the solution is insufficient.
 
-* ### The version number computed by `hatch-vcs` is incorrect
+- ### The version number computed by `hatch-vcs` is incorrect
 
-   Ensure that your clone of the repository has the latest tags. You may need to run
+  Ensure that your clone of the repository has the latest tags. You may need to run
 
-   ```bash
-   git pull --tags
-   ```
+  ```bash
+  git pull --tags
+  ```
 
-* ### `Unknown version source: vcs`
+- ### `Unknown version source: vcs`
 
-   Install `hatch-vcs` in your development environment.
+  Install `hatch-vcs` in your development environment.
 
-   If you see this in your production environment, then uninstall `hatchling`.
+  If you see this in your production environment, then uninstall `hatchling`.
 
-* ### `ValueError: A distribution name is required.`
+- ### `ValueError: A distribution name is required.`
 
-   This occurs when the `__package__` variable is not set. Always ensure that you invoke your package as a module.
+  This occurs when the `__package__` variable is not set. Always ensure that you invoke your package as a module.
 
-   Correct:
+  Correct:
 
-   ```bash
-   python -m mypackage.main
-   ```
+  ```bash
+  python -m mypackage.main
+  ```
 
-   Incorrect:
+  Incorrect:
 
-   ```bash
-   python mypackage/main.py
-   ```
+  ```bash
+  python mypackage/main.py
+  ```
 
-   (The latter should only be used for running scripts that are not part of a package!)
+  (The latter should only be used for running scripts that are not part of a package!)
 
-* ### `LookupError: Error getting the version from source `vcs`: setuptools-scm was unable to detect version`
+- ### `LookupError: Error getting the version from source `vcs`: setuptools-scm was unable to detect version`
 
-   This can occur if `git` is not correctly installed.
+  This can occur if `git` is not correctly installed.
 
-* ### `ImportError: cannot import name '__version__' from partially initialized module '...' (most likely due to a circular import)`
+- ### `ImportError: cannot import name '__version__' from partially initialized module '...' (most likely due to a circular import)`
 
-   This can occur when importing `__version__` from the top-level `__init__.py` file.
+  This can occur when importing `__version__` from the top-level `__init__.py` file.
 
-   Instead, import `__version__` from `version.py`.
+  Instead, import `__version__` from `version.py`.
 
-   For example, the following is a classical circular import:
+  For example, the following is a classical circular import:
 
-   ```python
-   # __init__.py
-   import myproject.initialize
-   from myproject.version import __version__
-   ```
+  ```python
+  # __init__.py
+  import myproject.initialize
+  from myproject.version import __version__
+  ```
 
-   ```python
-   # initialize.py
-   from myproject import __version__
-   print(f"{__version__=}")
-   ```
+  ```python
+  # initialize.py
+  from myproject import __version__
 
-   while the following is not:
+  print(f"{__version__=}")
+  ```
 
-   ```python
-   # __init__.py
-   import myproject.initialize
-   from myproject.version import __version__
-   ```
+  while the following is not:
 
-   ```python
-   # initialize.py
-   from myproject.version import __version__  # Always import from version.py!
-   print(f"{__version__=}")
-   ```
+  ```python
+  # __init__.py
+  import myproject.initialize
+  from myproject.version import __version__
+  ```
 
-* ### `ImportError: attempted relative import with no known parent package`
+  ```python
+  # initialize.py
+  from myproject.version import __version__  # Always import from version.py!
 
-   Ensure that the project is properly installed, e.g. by running `pip install --editable .`.
+  print(f"{__version__=}")
+  ```
 
-* ### `ModuleNotFoundError: No module named 'importlib.metadata'`
+- ### `ImportError: attempted relative import with no known parent package`
 
-   For end-of-life versions of Python below 3.8, the `importlib.metadata` module is not available. In this case, you need to install the `importlib-metadata` backport and
-   fall back to `importlib_metadata` in place of `importlib.metadata`.
+  Ensure that the project is properly installed, e.g. by running `pip install --editable .`.
+
+- ### `ModuleNotFoundError: No module named 'importlib.metadata'`
+
+  For end-of-life versions of Python below 3.8, the `importlib.metadata` module is not available. In this case, you need to install the `importlib-metadata` backport and
+  fall back to `importlib_metadata` in place of `importlib.metadata`.
 
 ## Conclusion
 
