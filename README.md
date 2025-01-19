@@ -139,7 +139,7 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
 * ### `ImportError: attempted relative import with no known parent package`
 
-   Ensure that the project is properly installed, e.g. by running `pip install -editable .`.
+   Ensure that the project is properly installed, e.g. by running `pip install --editable .`.
 
 * ### `ModuleNotFoundError: No module named 'importlib.metadata'`
 
