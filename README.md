@@ -82,24 +82,31 @@ Earlier versions of this project were significantly more fragile because they tr
 After cloning this repository,
 
 ```bash
-python -m hatch_vcs_footgun_example.main  # PackageNotFoundError because it's not installed
+# Fix an initial version number
+git commit --allow-empty -m "For v100.2.3"
+git tag v100.2.3
+# Try to run the package without installing it
+python -m hatch_vcs_footgun_example.main  # Fails with PackageNotFoundError
+# Install the package
 pip install --editable .
-python -m hatch_vcs_footgun_example.main  # Prints "My version is '1.0.3'."
+# Run the package
+python -m hatch_vcs_footgun_example.main  # Prints "My version is '100.2.3'."
 ```
 
-Without `hatch-vcs` installed, the version number is reported incorrectly after a new tag.
+Without setting the environment variable, the version number is reported incorrectly after a new tag.
 
 ```bash
-git commit --allow-empty -m "For v1.2.3"
-git tag v1.2.3
-python -m hatch_vcs_footgun_example.main  # My version is '1.0.3'.
+git commit --allow-empty -m "For v100.2.4"
+git tag v100.2.4
+unset MYPROJECT_HATCH_VCS_RUNTIME_VERSION
+python -m hatch_vcs_footgun_example.main  # My version is '100.2.3'.
 ```
 
-With `hatch-vcs` installed the version is correctly reported:
+After setting the environment variable, the version number is correctly reported:
 
 ```bash
-pip install hatch-vcs
-python -m hatch_vcs_footgun_example.main  # My version is '1.2.3'.
+export MYPROJECT_HATCH_VCS_RUNTIME_VERSION=1
+python -m hatch_vcs_footgun_example.main  # My version is '100.2.4'.
 ```
 
 ## Troubleshooting
