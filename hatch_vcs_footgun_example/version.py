@@ -3,6 +3,8 @@
 Based on <https://github.com/maresb/hatch-vcs-footgun-example>.
 """
 
+import os
+
 
 def _get_hatch_version():
     """Compute the most up-to-date version number in a development environment.
@@ -11,16 +13,9 @@ def _get_hatch_version():
 
     For more details, see <https://github.com/maresb/hatch-vcs-footgun-example/>.
     """
-    import os
-
-    try:
-        from hatchling.metadata.core import ProjectMetadata
-        from hatchling.plugin.manager import PluginManager
-        from hatchling.utils.fs import locate_file
-    except ImportError:
-        # Hatchling is not installed, so probably we are not in
-        # a development environment.
-        return None
+    from hatchling.metadata.core import ProjectMetadata
+    from hatchling.plugin.manager import PluginManager
+    from hatchling.utils.fs import locate_file
 
     pyproject_toml = locate_file(__file__, "pyproject.toml")
     if pyproject_toml is None:
@@ -45,4 +40,6 @@ def _get_importlib_metadata_version():
     return __version__
 
 
-__version__ = _get_hatch_version() or _get_importlib_metadata_version()
+__version__ = _get_importlib_metadata_version()
+if os.environ.get("HATCH_VCS_RUNTIME_VERSION"):
+    __version__ = _get_hatch_version()
