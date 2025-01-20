@@ -10,6 +10,7 @@ A somewhat hacky usage of the [Hatch VCS](https://github.com/ofek/hatch-vcs) plu
 
 1. Ensure that [Hatch VCS](https://pypi.org/project/hatch-vcs/) is configured in [`pyproject.toml`](pyproject.toml).
 1. Copy the contents of [`version.py`](hatch_vcs_footgun_example/version.py) and adjust to your project.
+1. Recommended: import `__version__` from that module into your top-level `__init__.py` file.
 1. Set the `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` environment variable to anything (e.g. `1`) to enable updating the version number at runtime.
 
 ## Background
