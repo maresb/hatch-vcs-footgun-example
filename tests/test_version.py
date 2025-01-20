@@ -55,30 +55,18 @@ def run_python(cmd, cwd, env=None, check=True):
     return result
 
 
-def install_editable(temp_project):
-    """Install the project in editable mode in the temp directory."""
+def install_editable(project):
+    """Install the project in editable mode for a given venv."""
     run_python(
-        [temp_project["python"], "-m", "pip", "install", "-e", "."],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "pip", "install", "-e", "."],
+        cwd=project["path"],
     )
 
 
-@pytest.fixture
-def temp_project(request):
-    """Create a temporary directory with a clone of the current repo.
-
-    This fixture has function scope, meaning a new project directory is created
-    for each test function that uses it. This ensures each test runs in isolation
-    with its own:
-    - Fresh clone of the repository
-    - New virtual environment
-
-    The directory will not be deleted after the test, and its path will be printed
-    to make it easy to inspect the contents for troubleshooting.
-    """
+def create_base_project(test_name):
+    """Create a base project with a fresh clone and venv."""
     # Create temp dir without using context manager so it won't be auto-deleted
     # Include the test name in the prefix for easier debugging
-    test_name = request.function.__name__
     tmpdir = tempfile.mkdtemp(prefix=f"hatch_vcs_test_{test_name}_")
     print(f"\nTemporary test directory: {tmpdir}")
 
@@ -91,12 +79,6 @@ def temp_project(request):
     # Configure Git user and email for the cloned repo
     run_git(["config", "user.email", "test@example.com"], cwd=tmpdir)
     run_git(["config", "user.name", "Test User"], cwd=tmpdir)
-
-    # Create initial commit and tag
-    run_git(
-        ["commit", "--allow-empty", "-m", "Initial commit for v100.2.3"], cwd=tmpdir
-    )
-    run_git(["tag", "v100.2.3"], cwd=tmpdir)
 
     # Create and activate a venv
     venv_path = Path(tmpdir) / "venv"
@@ -122,19 +104,18 @@ def temp_project(request):
     }
 
 
-@pytest.fixture
-def src_layout_project(temp_project):
-    """Convert the temp project to use src/ layout."""
+def convert_to_src_layout(project):
+    """Convert the project from a flat layout to use src/ layout."""
     # Create src directory
-    src_dir = temp_project["path"] / "src"
+    src_dir = project["path"] / "src"
     src_dir.mkdir()
 
     # Move package into src/
-    pkg_dir = temp_project["path"] / "hatch_vcs_footgun_example"
+    pkg_dir = project["path"] / "hatch_vcs_footgun_example"
     pkg_dir.rename(src_dir / "hatch_vcs_footgun_example")
 
     # Update pyproject.toml for src layout
-    pyproject = temp_project["path"] / "pyproject.toml"
+    pyproject = project["path"] / "pyproject.toml"
     content = pyproject.read_text()
     content += dedent(
         """
@@ -143,40 +124,82 @@ def src_layout_project(temp_project):
         """
     )
     pyproject.write_text(content)
+    run_git(["add", "."], cwd=project["path"])
+    run_git(
+        ["commit", "-m", "Update pyproject.toml for src layout"], cwd=project["path"]
+    )
+    return project
 
-    return temp_project
+
+def get_package_path(project):
+    """Get the path to the package directory based on layout."""
+    if project.get("layout") == "src":
+        return project["path"] / "src" / "hatch_vcs_footgun_example"
+    return project["path"] / "hatch_vcs_footgun_example"
 
 
-def test_version_without_install(temp_project):
+@pytest.fixture(params=["flat", "src"])
+def project(request):
+    """Create a temporary project directory with the specified layout.
+
+    This fixture is parametrized to test both flat and src layouts.
+    The project includes:
+    - Fresh clone of the repository
+    - New virtual environment
+    - Either flat or src layout based on the parameter
+    """
+    base_project = create_base_project(request.function.__name__)
+
+    if request.param == "src":
+        updated_project = convert_to_src_layout(base_project)
+    else:
+        updated_project = base_project
+
+    # Create initial commit and tag
+    run_git(
+        ["commit", "--allow-empty", "-m", "Initial commit for v100.2.3"],
+        cwd=updated_project["path"],
+    )
+    run_git(["tag", "v100.2.3"], cwd=updated_project["path"])
+
+    updated_project["layout"] = request.param
+    return updated_project
+
+
+def test_version_without_install(project):
     """Test that running without install raises PackageNotFoundError."""
     result = run_python(
-        [temp_project["python"], "-m", "hatch_vcs_footgun_example.main"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
         check=False,
     )
     assert result.returncode != 0
-    assert "PackageNotFoundError" in result.stderr
+    if project["layout"] == "flat":
+        assert "PackageNotFoundError" in result.stderr
+    else:
+        assert "Error while finding module specification for" in result.stderr
+        assert "ModuleNotFoundError: No module named" in result.stderr
 
 
-def test_version_with_install(temp_project):
+def test_version_with_install(project):
     """Test that installing the package allows version to be read."""
-    install_editable(temp_project)
+    install_editable(project)
 
     # Run the main script
     result = run_python(
-        [temp_project["python"], "-m", "hatch_vcs_footgun_example.main"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
     )
     assert "My version is '100.2.3'" in result.stdout
 
 
-def test_version_with_new_tag(temp_project):
+def test_version_with_new_tag(project):
     """Test version behavior when adding a new tag."""
-    install_editable(temp_project)
+    install_editable(project)
 
     # Create a new commit and tag
-    run_git(["commit", "--allow-empty", "-m", "Test commit"], cwd=temp_project["path"])
-    run_git(["tag", "v100.2.4"], cwd=temp_project["path"])
+    run_git(["commit", "--allow-empty", "-m", "Test commit"], cwd=project["path"])
+    run_git(["tag", "v100.2.4"], cwd=project["path"])
 
     # Create clean environment without HATCH_VCS_RUNTIME_VERSION
     env = os.environ.copy()
@@ -184,8 +207,8 @@ def test_version_with_new_tag(temp_project):
 
     # Run without HATCH_VCS_RUNTIME_VERSION - should show old version
     result = run_python(
-        [temp_project["python"], "-m", "hatch_vcs_footgun_example.main"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
         env=env,
     )
     assert "My version is '100.2.3'" in result.stdout
@@ -193,29 +216,29 @@ def test_version_with_new_tag(temp_project):
     # Run with HATCH_VCS_RUNTIME_VERSION set - should show new version
     env["MYPROJECT_HATCH_VCS_RUNTIME_VERSION"] = "1"
     result = run_python(
-        [temp_project["python"], "-m", "hatch_vcs_footgun_example.main"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
         env=env,
     )
     assert "My version is '100.2.4'" in result.stdout
 
 
-def test_unknown_version_source(temp_project):
+def test_unknown_version_source(project):
     """Test error when hatch-vcs is uninstalled."""
-    install_editable(temp_project)
+    install_editable(project)
 
     # Uninstall hatch-vcs
     run_python(
-        [temp_project["python"], "-m", "pip", "uninstall", "-y", "hatch-vcs"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "pip", "uninstall", "-y", "hatch-vcs"],
+        cwd=project["path"],
     )
 
     # Run with HATCH_VCS_RUNTIME_VERSION unset - should succeed
     env = os.environ.copy()
     env.pop("MYPROJECT_HATCH_VCS_RUNTIME_VERSION", None)
     result = run_python(
-        [temp_project["python"], "-m", "hatch_vcs_footgun_example.main"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
         env=env,
     )
     assert result.returncode == 0
@@ -224,8 +247,8 @@ def test_unknown_version_source(temp_project):
     # Run with HATCH_VCS_RUNTIME_VERSION set - should fail
     env["MYPROJECT_HATCH_VCS_RUNTIME_VERSION"] = "1"
     result = run_python(
-        [temp_project["python"], "-m", "hatch_vcs_footgun_example.main"],
-        cwd=temp_project["path"],
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
         env=env,
         check=False,
     )
@@ -233,12 +256,15 @@ def test_unknown_version_source(temp_project):
     assert "Unknown version source: vcs" in result.stderr
 
 
-def test_run_script_directly(src_layout_project):
+def test_run_script_directly(project):
     """Test error when running script directly instead of as module."""
+    # Get the correct path to version.py based on layout
+    version_py = get_package_path(project) / "version.py"
+
     # Try to run version.py directly without installing
     result = run_python(
-        [src_layout_project["python"], "src/hatch_vcs_footgun_example/version.py"],
-        cwd=src_layout_project["path"],
+        [project["python"], str(version_py)],
+        cwd=project["path"],
         check=False,
     )
     print("\nScript output:")
@@ -252,11 +278,14 @@ def test_run_script_directly(src_layout_project):
     )
 
 
-def test_circular_import(temp_project):
+def test_circular_import(project):
     """Test error with circular imports."""
+    # Get the correct path to package files based on layout
+    pkg_path = get_package_path(project)
+
     # Create a module that imports incorrectly from the root module instead of
     # from version.py
-    bad_module = temp_project["path"] / "hatch_vcs_footgun_example" / "initialize.py"
+    bad_module = pkg_path / "initialize.py"
     bad_module.write_text(
         dedent(
             """
@@ -268,7 +297,7 @@ def test_circular_import(temp_project):
     )
 
     # Update __init__.py to import the bad module
-    init_file = temp_project["path"] / "hatch_vcs_footgun_example" / "__init__.py"
+    init_file = pkg_path / "__init__.py"
     init_file.write_text(
         dedent(
             """
@@ -279,12 +308,12 @@ def test_circular_import(temp_project):
     )
 
     # Install the package
-    install_editable(temp_project)
+    install_editable(project)
 
     # Try to import the module - should fail with circular import
     result = run_python(
-        [temp_project["python"], "-c", "import hatch_vcs_footgun_example"],
-        cwd=temp_project["path"],
+        [project["python"], "-c", "import hatch_vcs_footgun_example"],
+        cwd=project["path"],
         check=False,
     )
     assert result.returncode != 0
