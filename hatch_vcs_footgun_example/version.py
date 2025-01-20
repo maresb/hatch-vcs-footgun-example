@@ -1,6 +1,10 @@
 """Compute the version number and store it in the `__version__` variable.
 
 Based on <https://github.com/maresb/hatch-vcs-footgun-example>.
+
+Do not put this directly into `__init__.py` because it can lead to circular imports.
+Instead, name this module something like `version.py` and import `__version__`
+from this module into your `__init__.py` file and elsewhere in your project.
 """
 
 import os
