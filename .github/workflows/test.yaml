@@ -14,7 +14,8 @@ jobs:
       fail-fast: false  # Don't cancel other jobs if one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        # Python 3.7 is no longer available on the -latest series (except for Windows)
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
