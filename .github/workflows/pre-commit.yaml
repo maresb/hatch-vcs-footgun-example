@@ -22,7 +22,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/pre-commit
-        key: pre-commit-${{ hashFiles('test/.pre-commit-config.yaml') }}
+        key: pre-commit-${{ hashFiles('tests/.pre-commit-config.yaml') }}
 
     # Basic install
     - name: Install pre-commit
@@ -34,7 +34,7 @@ jobs:
     - name: RUN PRE-COMMIT
       run: |
         set -xe
-        cp test/.pre-commit-config.yaml .
+        cp tests/.pre-commit-config.yaml .
         SKIP=no-commit-to-branch pre-commit run --show-diff-on-failure --color=always --all-files
 
     # Upload logs
