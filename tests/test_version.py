@@ -174,11 +174,11 @@ def test_version_without_install(project):
         check=False,
     )
     assert result.returncode != 0
-    if project["layout"] == "flat":
-        assert "PackageNotFoundError" in result.stderr
-    else:
+    if project["layout"] == "src":
         assert "Error while finding module specification for" in result.stderr
         assert "ModuleNotFoundError: No module named" in result.stderr
+    else:
+        assert "PackageNotFoundError" in result.stderr
 
 
 def test_version_with_install(project):
@@ -319,7 +319,7 @@ def test_circular_import(project):
     assert result.returncode != 0
 
     expected_strings = ["ImportError: cannot import name '__version__' from "]
-    if sys.version_info >= (3, 13):
+    if sys.version_info >= (3, 13) and project["layout"] != "src":
         expected_strings += [
             "(consider renaming ",
             "if it has the same name as a library you intended to import)",
