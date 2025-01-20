@@ -288,4 +288,17 @@ def test_circular_import(temp_project):
         check=False,
     )
     assert result.returncode != 0
-    assert "circular import" in result.stderr.lower()
+
+    expected_strings = ["ImportError: cannot import name '__version__' from "]
+    if sys.version_info >= (3, 13):
+        expected_strings += [
+            "(consider renaming ",
+            "if it has the same name as a library you intended to import)",
+        ]
+    else:
+        expected_strings += [
+            "partially initialized module",
+            "(most likely due to a circular import)",
+        ]
+    for expected_string in expected_strings:
+        assert expected_string in result.stderr
