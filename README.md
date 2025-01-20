@@ -98,7 +98,7 @@ Without setting the environment variable, the version number is reported incorre
 ```bash
 git commit --allow-empty -m "For v100.2.4"
 git tag v100.2.4
-unset MYPROJECT_HATCH_VCS_RUNTIME_VERSION
+unset MYPROJECT_HATCH_VCS_RUNTIME_VERSION  # Just in case it was previously set
 python -m hatch_vcs_footgun_example.main  # My version is '100.2.3'.
 ```
 
