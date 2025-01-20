@@ -110,7 +110,7 @@ def temp_project(request):
 
     # Install hatch-vcs in the venv
     subprocess.run(
-        [python, "-m", "pip", "install", "hatch-vcs"],
+        [python, "-m", "pip", "install", "--upgrade", "pip", "hatch-vcs"],
         cwd=tmpdir,
         check=True,
     )
