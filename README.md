@@ -62,7 +62,24 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
 
    This method should always be used with a fallback to one of the other two methods to avoid failure when the requirements are not met. For example, a production deployment will typically not have `git`, `hatchling`, or `hatch-vcs` installed.
 
-We recommend a default of using `importlib.metadata` to compute the version number. When more up-to-date version numbers are needed, the `hatch-vcs` method can be used by setting `MYPROJECT_HATCH_VCS_RUNTIME_VERSION`.
+We recommend a default of using `importlib.metadata` to compute the version number. When more up-to-date version numbers are needed, the `hatch-vcs` method can be enabled by setting the `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` environment variable.
+
+### Optional: Using the `_version.py` build hook
+
+Enabling the `_version.py` build hook has no advantage over `importlib.metadata` in terms of version updates, but it is a viable alternative.
+
+To enable this method, add the following to your `pyproject.toml` file:
+
+```toml
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
+```
+
+Then in `version.py`, remove `_get_importlib_metadata_version` and replace its invocation with
+
+```python
+from myproject._version import __version__
+```
 
 ## Conclusion
 
