@@ -1,5 +1,6 @@
 # Hatch VCS Footgun Example
 
+[![GitHub](https://img.shields.io/badge/github-maresb%2Fhatch--vcs--footgun--example-blue)](https://github.com/maresb/hatch-vcs-footgun-example)
 [![PyPI - Version](https://img.shields.io/pypi/v/hatch-vcs-footgun-example.svg)](https://pypi.org/project/hatch-vcs-footgun-example)
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![License: Unlicense](https://img.shields.io/github/license/maresb/hatch-vcs-footgun-example)](LICENSE)
