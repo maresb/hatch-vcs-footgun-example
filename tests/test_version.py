@@ -133,37 +133,71 @@ def convert_to_src_layout(project):
 
 def get_package_path(project):
     """Get the path to the package directory based on layout."""
-    if project.get("layout") == "src":
+    if project["layout"] == "src":
         return project["path"] / "src" / "hatch_vcs_footgun_example"
     return project["path"] / "hatch_vcs_footgun_example"
 
 
-@pytest.fixture(params=["flat", "src"])
-def project(request):
-    """Create a temporary project directory with the specified layout.
+def use_importlib_metadata_backport(project):
+    """Update version.py to use `importlib_metadata` instead of `importlib.metadata`."""
+    version_py = get_package_path(project) / "version.py"
+    content = version_py.read_text()
+    content = content.replace(
+        "from importlib.metadata import version",
+        "from importlib_metadata import version",
+    )
+    version_py.write_text(content)
+    run_python(
+        [project["python"], "-m", "pip", "install", "importlib_metadata"],
+        cwd=project["path"],
+    )
 
-    This fixture is parametrized to test both flat and src layouts.
+    # Commit the changes
+    run_git(["add", "."], cwd=project["path"])
+    run_git(
+        ["commit", "-m", "Update version.py to use importlib_metadata backport"],
+        cwd=project["path"],
+    )
+
+
+@pytest.fixture(
+    params=[
+        pytest.param(("flat", "importlib.metadata"), id="flat-stdlib"),
+        pytest.param(("flat", "importlib_metadata"), id="flat-backport"),
+        pytest.param(("src", "importlib.metadata"), id="src-stdlib"),
+        pytest.param(("src", "importlib_metadata"), id="src-backport"),
+    ]
+)
+def project(request):
+    """Create a temporary project directory with a clone of the repository.
+
+    This fixture is parametrized to test combinations of:
+    - Flat vs src layout
+    - importlib.metadata vs importlib_metadata
+
     The project includes:
     - Fresh clone of the repository
     - New virtual environment
-    - Either flat or src layout based on the parameter
+    - Layout and importlib.metadata or importlib_metadata module based on parameters
     """
-    base_project = create_base_project(request.function.__name__)
+    layout, metadata_module = request.param
+    project = create_base_project(request.function.__name__)
 
-    if request.param == "src":
-        updated_project = convert_to_src_layout(base_project)
-    else:
-        updated_project = base_project
+    if layout == "src":
+        project = convert_to_src_layout(project)
+    project["layout"] = layout
+
+    if metadata_module == "importlib_metadata":
+        use_importlib_metadata_backport(project)
+    project["metadata_module"] = metadata_module
 
     # Create initial commit and tag
     run_git(
         ["commit", "--allow-empty", "-m", "Initial commit for v100.2.3"],
-        cwd=updated_project["path"],
+        cwd=project["path"],
     )
-    run_git(["tag", "v100.2.3"], cwd=updated_project["path"])
-
-    updated_project["layout"] = request.param
-    return updated_project
+    run_git(["tag", "v100.2.3"], cwd=project["path"])
+    return project
 
 
 def test_version_without_install(project):
