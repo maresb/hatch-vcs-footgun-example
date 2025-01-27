@@ -21,6 +21,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-python@v5
+      - name: install tomli_w
+        run: python -m pip install tomli_w
+      - name: Prepare hatch-fancy-pypi-readme
+        run: python .github/workflows/prepare_pypi_readme.py
       - uses: hynek/build-and-inspect-python-package@v2
         with:
           # Prove that the packages were built in the context of this workflow.
