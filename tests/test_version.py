@@ -13,11 +13,14 @@ def test_version_without_install(project):
         check=False,
     )
     assert result.returncode != 0
-    if project["layout"] == "src":
-        assert "Error while finding module specification for" in result.stderr
+    if project["version_source"] == "_version.py":
         assert "ModuleNotFoundError: No module named" in result.stderr
     else:
-        assert "PackageNotFoundError" in result.stderr
+        if project["layout"] == "src":
+            assert "Error while finding module specification for" in result.stderr
+            assert "ModuleNotFoundError: No module named" in result.stderr
+        else:
+            assert "PackageNotFoundError" in result.stderr
 
 
 def test_version_with_install(project):
@@ -111,10 +114,14 @@ def test_run_script_directly(project):
     print("\nScript error:")
     print(result.stderr)
     assert result.returncode != 0
-    assert "__package__ not set in" in result.stderr
-    assert (
-        "ensure that you are running this module as part of a package" in result.stderr
-    )
+    if project["version_source"] == "_version.py":
+        assert "ModuleNotFoundError: No module named" in result.stderr
+    else:
+        assert "__package__ not set in" in result.stderr
+        assert (
+            "ensure that you are running this module as part of a package"
+            in result.stderr
+        )
 
 
 def test_circular_import(project):

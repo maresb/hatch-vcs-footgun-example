@@ -155,3 +155,45 @@ def use_importlib_metadata_backport(project):
         ["commit", "-m", "Update version.py to use importlib_metadata backport"],
         cwd=project["path"],
     )
+
+
+def use_version_py_build_hook(project):
+    """Configure the project to use _version.py build hook."""
+    # Update pyproject.toml to enable the build hook
+    package_path = get_package_path(project)
+    relative_package_path = package_path.relative_to(project["path"])
+    version_file = relative_package_path / "_version.py"
+    pyproject = project["path"] / "pyproject.toml"
+    content = pyproject.read_text()
+    content += dedent(
+        f"""
+        [tool.hatch.build.hooks.vcs]
+        version-file = "{version_file.as_posix()}"
+        """
+    )
+    pyproject.write_text(content)
+
+    # Update version.py to use _version.py
+    version_py = get_package_path(project) / "version.py"
+    content = version_py.read_text()
+
+    original_version_definition = "__version__ = _get_importlib_metadata_version()"
+    new_version_definition = (
+        "from hatch_vcs_footgun_example._version import __version__"
+    )
+    assert original_version_definition in content
+    content = content.replace(original_version_definition, new_version_definition)
+    version_py.write_text(content)
+
+    # Add _version.py to .gitignore
+    gitignore = project["path"] / ".gitignore"
+    content = gitignore.read_text()
+    content += "\n_version.py\n"
+    gitignore.write_text(content)
+
+    # Commit the changes
+    run_git(["add", "."], cwd=project["path"])
+    run_git(
+        ["commit", "-m", "Configure project to use _version.py build hook"],
+        cwd=project["path"],
+    )
