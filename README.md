@@ -74,7 +74,7 @@ To enable this method, add the following to your `pyproject.toml` file:
 
 ```toml
 [tool.hatch.build.hooks.vcs]
-version-file = "_version.py"
+version-file = "myproject/_version.py"
 ```
 
 Then in `version.py`, remove `_get_importlib_metadata_version` and replace its invocation with
