@@ -12,3 +12,14 @@ Homepage = "https://github.com/maresb/hatch-vcs-footgun-example"
 
 [tool.hatch.version]
 source = "vcs"
+
+# # Optional: prevent the version number from being incremented.
+# # The version number will correspond to that of the last release tag.
+# [tool.hatch.version.raw-options]
+# # See configuration details in
+# # <https://setuptools-scm.readthedocs.io/en/latest/extending/#version-number-construction>
+# version_scheme = "no-guess-dev"
+
+# # Optional: precompute the version number at install or build time in _version.py.
+# [tool.hatch.build.hooks.vcs]
+# version-file = "_version.py"
