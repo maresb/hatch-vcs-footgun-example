@@ -52,6 +52,8 @@ With Hatch VCS, the definitive source of truth is the Git tag. One often still n
 
    As with the `importlib.metadata` approach, if the project is installed in editable mode then the `_version.py` file will not be updated unless the package is reinstalled (or locally rebuilt).
 
+   For more details, see [the `_version.py` build hook section](#optional-using-the-_versionpy-build-hook).
+
 1. ### Use `hatch-vcs` to dynamically compute the version number at runtime
 
    This strategy has several requirements:
