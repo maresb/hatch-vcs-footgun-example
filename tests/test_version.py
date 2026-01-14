@@ -124,6 +124,34 @@ def test_unknown_version_source(project):
     assert "Unknown version source: vcs" in result.stderr
 
 
+def test_git_unavailable(project):
+    """Test error when git is unavailable (LookupError from setuptools-scm).
+
+    This tests the troubleshooting item:
+    'LookupError: Error getting the version from source `vcs`:
+    setuptools-scm was unable to detect version'
+    """
+    install_editable(project)
+
+    # Rename .git directory so setuptools-scm can't find the repo.
+    # The project fixture provides an isolated temp directory, so this is safe.
+    (project["path"] / ".git").rename(project["path"] / ".git_hidden")
+
+    env = os.environ.copy()
+    env["MYPROJECT_HATCH_VCS_RUNTIME_VERSION"] = "1"
+
+    result = run_python(
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "LookupError" in result.stderr
+    assert "setuptools-scm was unable to detect version" in result.stderr
+
+
 def test_run_script_directly(project):
     """Test error when running script directly instead of as module."""
     # Get the correct path to version.py based on layout
