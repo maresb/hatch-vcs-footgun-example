@@ -65,6 +65,32 @@ def test_version_with_new_tag(project):
     assert "My version is '100.2.4'" in result.stdout
 
 
+def test_no_version_tags(project):
+    """Test that setuptools-scm falls back to '0.1.dev...' when no tags exist."""
+    # Delete ALL tags so the repo has no version tags at all
+    tags = run_git(["tag", "-l"], cwd=project["path"]).splitlines()
+    for tag in tags:
+        if tag.strip():
+            run_git(["tag", "-d", tag.strip()], cwd=project["path"])
+
+    # Verify no tags remain
+    remaining_tags = run_git(["tag", "-l"], cwd=project["path"])
+    assert remaining_tags.strip() == "", f"Tags still exist: {remaining_tags}"
+
+    install_editable(project)
+
+    # Run with HATCH_VCS_RUNTIME_VERSION set
+    env = os.environ.copy()
+    env["MYPROJECT_HATCH_VCS_RUNTIME_VERSION"] = "1"
+    result = run_python(
+        [project["python"], "-m", "hatch_vcs_footgun_example.main"],
+        cwd=project["path"],
+        env=env,
+    )
+
+    assert "My version is '0.1.dev" in result.stdout
+
+
 def test_unknown_version_source(project):
     """Test error when hatch-vcs is uninstalled."""
     install_editable(project)
