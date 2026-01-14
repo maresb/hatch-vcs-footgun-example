@@ -168,7 +168,9 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
 - ### `LookupError: Error getting the version from source `vcs`: setuptools-scm was unable to detect version`
 
-  This can occur if `git` is not correctly installed.
+  This occurs when `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` is set but `git` is not correctly installed.
+
+  Either ensure `git` is available, or unset the environment variable.
 
 - ### `ImportError: cannot import name '__version__' from partially initialized module '...' (most likely due to a circular import)`
 
