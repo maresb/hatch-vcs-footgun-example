@@ -1,0 +1,100 @@
+# This is for the "pre-commit" tool, which enforces checks before local commits are allowed.
+# <https://pre-commit.com/>
+
+# This is normally kept in the repository root, but I want to keep this repository
+# as minimalistic as possible, so I'm hiding it here. Copy it to the root directory
+# if you want to use it.
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+
+  # # Protect specific branches from direct commits.
+  # - id: no-commit-to-branch
+  #   args: [--branch, master, --branch, main, --branch, staging, --branch, production]
+
+  # Trims trailing whitespace.
+  - id: trailing-whitespace
+
+  # Prevent giant files from being committed.
+  - id: check-added-large-files
+
+  # Simply check whether files parse as valid python.
+  - id: check-ast
+
+  # Check for files that contain merge conflict strings.
+  - id: check-merge-conflict
+
+  # Attempts to load all xml files to verify syntax.
+  - id: check-xml
+
+  # Attempts to load all yaml files to verify syntax.
+  - id: check-yaml
+
+  # Check for debugger imports and py37+ breakpoint() calls in python source.
+  - id: debug-statements
+
+  # Makes sure files end in a newline and only a newline.
+  - id: end-of-file-fixer
+
+  # Sorts entries in requirements.txt and removes incorrect entry for pkg-resources==0.0.0
+  - id: requirements-txt-fixer
+
+  # Replaces or checks mixed line ending.
+  - id: mixed-line-ending
+    args: ['--fix=no']
+
+# Ruff actually replaces several of the below hooks.
+# TODO: clean up the redundant hooks.
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.2
+  hooks:
+    # Run the linter.
+    - id: ruff
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
+
+# Upgrade code style to the current Python version.
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.19.1
+  hooks:
+  - id: pyupgrade
+    args: ["--py310-plus", "--keep-runtime-typing"]
+
+# Organize imports.
+- repo: https://github.com/pre-commit/mirrors-isort
+  rev: v5.10.1
+  hooks:
+  - id: isort
+    args: ["--profile", "black"]
+
+# Automatically format code.
+- repo: https://github.com/psf/black
+  rev: 24.10.0
+  hooks:
+  - id: black
+    language_version: python3
+
+# Enforce coding conventions.
+- repo: https://github.com/pycqa/flake8
+  rev: 7.1.1
+  hooks:
+  - id: flake8
+    args: ['--max-line-length=88']  # default of Black
+
+# Type checking
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+    -   id: mypy
+
+- repo: https://github.com/executablebooks/mdformat
+  rev: 0.7.21  # Use the ref you want to point at
+  hooks:
+  - id: mdformat
+    # Optionally add plugins
+    additional_dependencies:
+    - mdformat-gfm
+    - mdformat-black

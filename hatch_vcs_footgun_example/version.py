@@ -1,26 +1,23 @@
 """Compute the version number and store it in the `__version__` variable.
 
 Based on <https://github.com/maresb/hatch-vcs-footgun-example>.
+
+Do not put this directly into `__init__.py` because it can lead to circular imports.
+Instead, name this module something like `version.py` and import `__version__`
+from this module into your `__init__.py` file and elsewhere in your project.
 """
+
+import os
 
 
 def _get_hatch_version():
     """Compute the most up-to-date version number in a development environment.
 
-    Returns `None` if Hatchling is not installed, e.g. in a production environment.
-
     For more details, see <https://github.com/maresb/hatch-vcs-footgun-example/>.
     """
-    import os
-
-    try:
-        from hatchling.metadata.core import ProjectMetadata
-        from hatchling.plugin.manager import PluginManager
-        from hatchling.utils.fs import locate_file
-    except ImportError:
-        # Hatchling is not installed, so probably we are not in
-        # a development environment.
-        return None
+    from hatchling.metadata.core import ProjectMetadata
+    from hatchling.plugin.manager import PluginManager
+    from hatchling.utils.fs import locate_file
 
     pyproject_toml = locate_file(__file__, "pyproject.toml")
     if pyproject_toml is None:
@@ -41,8 +38,16 @@ def _get_importlib_metadata_version():
     """
     from importlib.metadata import version
 
+    if __package__ is None:
+        raise RuntimeError(
+            f"__package__ not set in '{__file__}' - ensure that you are running this "
+            "module as part of a package, e.g. 'python -m mypackage.version' instead "
+            "of 'python mypackage/version.py'."
+        )
     __version__ = version(__package__)
     return __version__
 
 
-__version__ = _get_hatch_version() or _get_importlib_metadata_version()
+__version__ = _get_importlib_metadata_version()
+if os.environ.get("MYPROJECT_HATCH_VCS_RUNTIME_VERSION"):
+    __version__ = _get_hatch_version()
