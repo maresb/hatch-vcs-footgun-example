@@ -142,6 +142,20 @@ There are many potential pitfalls to this approach. Please open an issue if you 
   git pull --tags
   ```
 
+- ### `PackageNotFoundError` / `ModuleNotFoundError: No module named ...`
+
+  This occurs when the package is not installed. With a `src/` layout, you may see `ModuleNotFoundError` instead. Install the package first:
+
+  ```bash
+  pip install --editable .
+  ```
+
+- ### `ModuleNotFoundError: No module named '..._version'`
+
+  This occurs when using the `_version.py` build hook but running from source without installing. The `_version.py` file is generated during install/build.
+
+  Install the package (editable or otherwise) to generate it.
+
 - ### `Unknown version source: vcs`
 
   This occurs when `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` is set but `hatch-vcs` is not installed.
