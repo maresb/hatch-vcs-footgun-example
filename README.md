@@ -148,9 +148,9 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
   If you see this in your production environment, then uninstall `hatchling`.
 
-- ### `ValueError: A distribution name is required.`
+- ### `RuntimeError: __package__ not set in '...'`
 
-  This occurs when the `__package__` variable is not set. Always ensure that you invoke your package as a module.
+  This occurs when running the script directly instead of as a module.
 
   Correct:
 
