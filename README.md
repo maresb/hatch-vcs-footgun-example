@@ -222,10 +222,6 @@ There are many potential pitfalls to this approach. Please open an issue if you 
   print(f"{__version__=}")
   ```
 
-- ### `ImportError: attempted relative import with no known parent package`
-
-  Ensure that the project is properly installed, e.g. by running `pip install --editable .`.
-
 - ### `ModuleNotFoundError: No module named 'importlib.metadata'`
 
   For end-of-life versions of Python below 3.8, the `importlib.metadata` module is not available. In this case, you need to install the `importlib-metadata` backport and
