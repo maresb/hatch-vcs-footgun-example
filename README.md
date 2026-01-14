@@ -144,9 +144,9 @@ There are many potential pitfalls to this approach. Please open an issue if you 
 
 - ### `Unknown version source: vcs`
 
-  Install `hatch-vcs` in your development environment.
+  This occurs when `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` is set but `hatch-vcs` is not installed.
 
-  If you see this in your production environment, then uninstall `hatchling`.
+  Either install `hatch-vcs` in your environment, or unset the environment variable if you don't need runtime version updates.
 
 - ### `RuntimeError: __package__ not set in '...'`
 
