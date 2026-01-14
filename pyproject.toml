@@ -23,4 +23,4 @@ source = "vcs"
 
 # # Optional: precompute the version number at install or build time in _version.py.
 # [tool.hatch.build.hooks.vcs]
-# version-file = "_version.py"
+# version-file = "myproject/_version.py"
