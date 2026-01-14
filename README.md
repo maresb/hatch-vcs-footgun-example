@@ -12,7 +12,7 @@ A somewhat hacky usage of the [Hatch VCS](https://github.com/ofek/hatch-vcs) plu
 1. Ensure that [Hatch VCS](https://pypi.org/project/hatch-vcs/) is configured in [`pyproject.toml`](pyproject.toml).
 1. Copy the contents of [`version.py`](hatch_vcs_footgun_example/version.py) and adjust to your project.
 1. Recommended: import `__version__` from that module into your top-level `__init__.py` file.
-1. Set the `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` environment variable to anything (e.g. `1`) to enable updating the version number at runtime.
+1. [Set the `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` environment variable](#setting-the-environment-variable) to anything (e.g. `1`) to enable updating the version number at runtime.
 
 ## Background
 
@@ -129,6 +129,52 @@ After setting the environment variable, the version number is correctly reported
 export MYPROJECT_HATCH_VCS_RUNTIME_VERSION=1
 python -m hatch_vcs_footgun_example.main  # My version is '100.2.4'.
 ```
+
+## Setting the environment variable
+
+There are several ways to set `MYPROJECT_HATCH_VCS_RUNTIME_VERSION` in your development environment:
+
+- **Shell configuration** (`.bashrc`, `.zshrc`, etc.):
+
+  ```bash
+  export MYPROJECT_HATCH_VCS_RUNTIME_VERSION=1
+  ```
+
+- **[direnv](https://direnv.net/)** (`.envrc` in your project root):
+
+  ```bash
+  export MYPROJECT_HATCH_VCS_RUNTIME_VERSION=1
+  ```
+
+- **[Hatch](https://hatch.pypa.io/latest/config/environment/advanced/#environment-variable-overrides)** (`pyproject.toml` or `hatch.toml`):
+
+  ```toml
+  [tool.hatch.envs.default.env-vars]
+  MYPROJECT_HATCH_VCS_RUNTIME_VERSION = "1"
+  ```
+
+- **[conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#setting-environment-variables)**:
+
+  ```bash
+  conda env config vars set MYPROJECT_HATCH_VCS_RUNTIME_VERSION=1
+  ```
+
+- **[pixi](https://pixi.sh/)** (`pixi.toml`):
+
+  ```toml
+  [activation.env]
+  MYPROJECT_HATCH_VCS_RUNTIME_VERSION = "1"
+  ```
+
+- **[Dev Containers](https://containers.dev/implementors/json_reference/#general-properties)** (`.devcontainer/devcontainer.json`):
+
+  ```json
+  {
+    "containerEnv": {
+      "MYPROJECT_HATCH_VCS_RUNTIME_VERSION": "1"
+    }
+  }
+  ```
 
 ## Troubleshooting
 
