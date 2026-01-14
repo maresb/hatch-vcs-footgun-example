@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "hatch-vcs-footgun-example"
 dynamic = ["version"]
 readme = "README.md"
+license = { file = "LICENSE" }
 
 [project.urls]
 Homepage = "https://github.com/maresb/hatch-vcs-footgun-example"
