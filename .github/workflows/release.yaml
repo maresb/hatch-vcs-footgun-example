@@ -27,6 +27,13 @@ jobs:
         run: python -m pip install tomli_w
       - name: Prepare hatch-fancy-pypi-readme
         run: python .github/workflows/prepare_pypi_readme.py
+      - name: Get version from tag
+        # The prepare_pypi_readme.py script above modifies pyproject.toml, which
+        # makes the working tree dirty. This causes setuptools-scm to generate a
+        # dev version with a dirty marker. We override this by explicitly setting
+        # the version from the release tag.
+        if: github.event_name == 'release'
+        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
       - uses: hynek/build-and-inspect-python-package@efb823f52190ad02594531168b7a2d5790e66516 # v2.14.0
         with:
           # Prove that the packages were built in the context of this workflow.
