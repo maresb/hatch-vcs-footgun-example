@@ -10,9 +10,6 @@ name = "hatch-vcs-footgun-example"
 dynamic = ["version"]
 readme = "README.md"
 
-[project.urls]
-Homepage = "https://github.com/maresb/hatch-vcs-footgun-example"
-
 [tool.hatch.version]
 source = "vcs"
 

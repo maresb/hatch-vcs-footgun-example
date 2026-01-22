@@ -13,6 +13,9 @@ if "readme" not in dynamic:
 pyproject["project"]["dynamic"] = dynamic
 
 pyproject["project"]["license"] = {"file": "LICENSE"}
+pyproject["project"]["urls"] = {
+    "Homepage": "https://github.com/maresb/hatch-vcs-footgun-example"
+}
 
 build_system_requires = pyproject["build-system"].get("requires", [])
 if "hatch-fancy-pypi-readme" not in build_system_requires:
