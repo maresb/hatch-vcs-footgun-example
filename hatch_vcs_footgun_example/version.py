@@ -8,6 +8,7 @@ from this module into your `__init__.py` file and elsewhere in your project.
 """
 
 import os
+from pathlib import Path
 
 
 def _get_hatch_version():
@@ -22,10 +23,17 @@ def _get_hatch_version():
     pyproject_toml = locate_file(__file__, "pyproject.toml")
     if pyproject_toml is None:
         raise RuntimeError("pyproject.toml not found although hatchling is installed")
-    root = os.path.dirname(pyproject_toml)
-    metadata = ProjectMetadata(root=root, plugin_manager=PluginManager())
-    # Version can be either statically set in pyproject.toml or computed dynamically:
-    return metadata.core.version or metadata.hatch.version.cached
+    root = Path(pyproject_toml).parent
+
+    # Temporarily set cwd to project root for PEP 517 compliance.
+    old_cwd = Path.cwd()
+    os.chdir(root)
+    try:
+        metadata = ProjectMetadata(root=str(root), plugin_manager=PluginManager())
+        # Version can be static in pyproject.toml or computed dynamically:
+        return metadata.core.version or metadata.hatch.version.cached
+    finally:
+        os.chdir(old_cwd)
 
 
 def _get_importlib_metadata_version():
