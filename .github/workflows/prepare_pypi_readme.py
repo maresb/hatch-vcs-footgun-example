@@ -12,6 +12,8 @@ if "readme" not in dynamic:
     dynamic.append("readme")
 pyproject["project"]["dynamic"] = dynamic
 
+pyproject["project"]["license"] = {"file": "LICENSE"}
+
 build_system_requires = pyproject["build-system"].get("requires", [])
 if "hatch-fancy-pypi-readme" not in build_system_requires:
     build_system_requires.append("hatch-fancy-pypi-readme")
