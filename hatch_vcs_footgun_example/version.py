@@ -24,9 +24,16 @@ def _get_hatch_version():
     if pyproject_toml is None:
         raise RuntimeError("pyproject.toml not found although hatchling is installed")
     root = Path(pyproject_toml).parent
-    metadata = ProjectMetadata(root=str(root), plugin_manager=PluginManager())
-    # Version can be either statically set in pyproject.toml or computed dynamically:
-    return metadata.core.version or metadata.hatch.version.cached
+
+    # Temporarily set cwd to project root for PEP 517 compliance.
+    old_cwd = Path.cwd()
+    os.chdir(root)
+    try:
+        metadata = ProjectMetadata(root=str(root), plugin_manager=PluginManager())
+        # Version can be static in pyproject.toml or computed dynamically:
+        return metadata.core.version or metadata.hatch.version.cached
+    finally:
+        os.chdir(old_cwd)
 
 
 def _get_importlib_metadata_version():
